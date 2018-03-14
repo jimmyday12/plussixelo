@@ -4,7 +4,7 @@
 \name{plussixelo-package}
 \alias{plussixelo}
 \alias{plussixelo-package}
-\title{plussixelo: What the Package Does (One Line, Title Case)}
+\title{plussixelo: Tools for running ELO calculations on plussixoneblog.com}
 \description{
 What the package does (one paragraph).
 }

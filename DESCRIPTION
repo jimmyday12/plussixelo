@@ -1,6 +1,6 @@
 Package: plussixelo
 Version: 0.0.0.9000
-Title: What the Package Does (One Line, Title Case)
+Title: Tools for running ELO calculations on plussixoneblog.com
 Description: What the package does (one paragraph).
 Authors@R: person("James", "Day", email = "jamesthomasday@gmail.com", role = c("aut", "cre"))
 License: MIT + file LICENSE
@@ -13,3 +13,7 @@ Suggests:
     knitr,
     rmarkdown
 VignetteBuilder: knitr
+Imports: 
+    dplyr,
+    magrittr,
+    tidyr

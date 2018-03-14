@@ -31,7 +31,11 @@ find_expected_outcome <- function(elo_difference, M = 400) {
 }
 
 
+#' Helper function to process elo data into long format
 #' @export
+#' @importFrom magrittr %>%
+#' @import dplyr
+#' @import tidyr
 find_expected_margin <- function(elo_difference, M = 400, B = 0.025) {
   # Traditinoal ELO equation for expected outcome
   # format is expected_outcome = 1/ 1+ 10^(elo_difference/M)
@@ -67,6 +71,7 @@ find_expected_margin <- function(elo_difference, M = 400, B = 0.025) {
 #' \dontrun{
 #' calculate_season_carryover(1650, weight = -10)
 #' }
+#' @export
 calculate_season_carryover <- function(elo, initial_team = 1500, weight = 0.5) {
   # error checks
   if (!is.numeric(elo)) stop("elo must be numeric")
@@ -82,7 +87,11 @@ calculate_season_carryover <- function(elo, initial_team = 1500, weight = 0.5) {
   return(new_elo)
 }
 
-
+#' Helper function to process elo data into long format
+#' @export
+#' @importFrom magrittr %>%
+#' @import dplyr
+#' @import tidyr
 map_margin_to_outcome <- function(margin, A = 0, K = 1, B = 0.025, v = 1, Q = 1, C = 1) {
   # Generalised logistic function is in format
   # Y <- A + ((K-A) / ((C + (Q*exp(-B * X)))^(1/v)))
@@ -93,6 +102,11 @@ map_margin_to_outcome <- function(margin, A = 0, K = 1, B = 0.025, v = 1, Q = 1,
   return(actOut)
 }
 
+#' Helper function to process elo data into long format
+#' @export
+#' @importFrom magrittr %>%
+#' @import dplyr
+#' @import tidyr
 calculate_MOV <- function(elo_diff, margin, J = 2.2) {
   # performs a Margin of Victory Multiplier
   # this allows for scaling of new result depending on if fav won or not
@@ -111,21 +125,11 @@ calculate_MOV <- function(elo_diff, margin, J = 2.2) {
 }
 
 
-#' Find a team's new ELO given their previous ELO, home ground advantage and actual result.
-#'
-#' \code{update_elo} returns a new ELO value for the specified team.
-#'
-#' This calculates an updated ELO based on the ELO rating of each team,
-#' the home ground advatnage assigned and the actual margin. It can return either the home team ELO, the away team ELO or both
-#'
-#' @param margin The actual margin of the match, in points, from the home team perspective. Positive numbers indicate a home team win, negative numbers indicate an away team win. A value of 0 indicates a draw.
-#' @param elo_diff The difference between home and away ELO scores, including home ground advantage
-#' @param returns The value to return as an output. Can be either the home team ELO, the away team ELO or both. Returning both will return a vector of two values with the home team ELO listed first.
-#' @param HGA Home ground advantage
-#' @return Returns the ELO of the team specified in `returns`
-#'
-#' @examples
-#' update_elo(26, elo_diff = 50)
+#' Helper function to process elo data into long format
+#' @export
+#' @importFrom magrittr %>%
+#' @import dplyr
+#' @import tidyr
 update_elo <- function(margin, elo_diff, MOV = 1, k = 20,
                        M = 400, B = 0.025) {
 
@@ -154,12 +158,15 @@ convert_elo_results <- function(results) {
 
   # Convert results to wide format
   results_long <- results %>%
-    gather(variable, value, Home.Team:Away.Points) %>%
+    mutate(Home.ELO = as.numeric(Home.ELO_post),
+           Away.ELO = as.numeric(Away.ELO_post)) %>%
+    select(Game:Away.Points, Home.ELO:Away.ELO, everything())  %>%
+    gather(variable, value, Home.Team:Away.ELO) %>%
     separate(variable, into = c("Status", "variable")) %>%
     spread(variable, value) %>%
     arrange(Game) %>%
     mutate(Margin = ifelse(Status == "Home", Margin, Margin * -1)) %>%
-    select(Game, Date, Season, Round, Round.Type, Round.Number, Venue, Team, Status, Goals, Behinds, Points)
+    select(Game, Date, Season, Round, Round.Type, Round.Number, Venue, Team, Status, Goals, Behinds, Points, Margin, ELO)
 
   return(results_long)
 }
