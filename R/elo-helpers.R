@@ -145,5 +145,24 @@ update_elo <- function(margin, elo_diff, MOV = 1, k = 20,
   return(elo_change)
 }
 
+#' Helper function to process elo data into long format
+#' @export
+#' @importFrom magrittr %>%
+#' @import dplyr
+#' @import tidyr
+convert_elo_results <- function(results) {
+
+  # Convert results to wide format
+  results_long <- results %>%
+    gather(variable, value, Home.Team:Away.Points) %>%
+    separate(variable, into = c("Status", "variable")) %>%
+    spread(variable, value) %>%
+    arrange(Game) %>%
+    mutate(Margin = ifelse(Status == "Home", Margin, Margin * -1)) %>%
+    select(Game, Date, Season, Round, Round.Type, Round.Number, Venue, Team, Status, Goals, Behinds, Points)
+
+  return(results_long)
+}
+
 
 
