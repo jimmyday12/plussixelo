@@ -10,6 +10,8 @@
 #' @param stdev Standard Deviation of results
 #' @return A dataframe of simulated results
 #'
+#' @importFrom magrittr %>%
+#' @import dplyr
 #' @export
 process_historical_elo <- function(results, init_elo = 1500,
                                    HGA = 35, k = 20, M = 400,
@@ -70,7 +72,8 @@ simulate_season <- function(fixture, team_elo = data.frame(), simulation = 1,
   return(simulated_results)
 }
 
-
+#' @importFrom magrittr %>%
+#' @import dplyr
 process_matches <- function(data, team_elo, type = "Historical",
                             stdev = 41, HGA = 35, k = 20, M = 400,
                             B = 0.025, carryover_weight = 0.6,
@@ -127,10 +130,10 @@ process_matches <- function(data, team_elo, type = "Historical",
     # Add new data to df
     game <- game %>%
       mutate(
-        home_elo = home_elo,
-        away_elo = away_elo,
-        home_elo_post = new_home_elo,
-        away_elo_post = new_away_elo,
+        Home.ELO = home_elo,
+        Away.ELO = away_elo,
+        Home.ELO_post = new_home_elo,
+        Away.ELO_post = new_away_elo,
         exp_margin = exp_margin,
         exp_outcome = exp_outcome
       )
