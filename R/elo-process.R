@@ -102,7 +102,7 @@ process_matches <- function(data, team_elo, type = "Historical",
     }
 
     # Calculate ELO Diff
-    elo_diff <- home_elo - away_elo + HGA
+    elo_diff <- home_elo + HGA - away_elo
 
     # Find expected outcome based on elo
     exp_margin <- find_expected_margin(elo_diff, M = M, B = B)

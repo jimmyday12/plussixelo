@@ -92,7 +92,7 @@ calculate_season_carryover <- function(elo, initial_team = 1500, weight = 0.5) {
 #' @importFrom magrittr %>%
 #' @import dplyr
 #' @import tidyr
-map_margin_to_outcome <- function(margin, A = 0, K = 1, B = 0.025, v = 1, Q = 1, C = 1) {
+map_margin_to_outcome <- function(margin, A = 0, K = 1, B = 0.05, v = 1, Q = 1, C = 1) {
   # Generalised logistic function is in format
   # Y <- A + ((K-A) / ((C + (Q*exp(-B * X)))^(1/v)))
   numer <- K - A # create numerator

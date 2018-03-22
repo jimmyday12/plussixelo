@@ -4,7 +4,7 @@
 \alias{map_margin_to_outcome}
 \title{Helper function to process elo data into long format}
 \usage{
-map_margin_to_outcome(margin, A = 0, K = 1, B = 0.025, v = 1, Q = 1,
+map_margin_to_outcome(margin, A = 0, K = 1, B = 0.05, v = 1, Q = 1,
   C = 1)
 }
 \description{
