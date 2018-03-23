@@ -58,6 +58,7 @@ simulate_season <- function(fixture, team_elo = data.frame(), simulation = 1,
                             stdev = 41, HGA = 35, k = 20, M = 400,
                             B = 0.025, carryover_weight = 0.6,
                             init_elo = 1500) {
+
   simulated_results <- process_matches(
     results, team_elo = team_elo, type = "Simulation",
     HGA = HGA, k = k, M = M, B = B,
@@ -79,24 +80,33 @@ process_matches <- function(data, team_elo, type = "Historical",
                             B = 0.025, carryover_weight = 0.6,
                             init_elo = 1500) {
 
+  message("Starting to process data")
   # Start progress bar
   if(type == "Historical") pb <- progress_estimated(nrow(data))
 
   # Initialise a data frame
-  results <- tibble()
+  # First, Add new columns to data
+  data <- data %>%
+    mutate(      Home.ELO = NA,
+                 Away.ELO = NA,
+                 Home.ELO_post = NA,
+                 Away.ELO_post = NA,
+                 exp_margin = NA,
+                 exp_outcome = NA)
 
   # Step through each game
   for (i in seq_along(data$Game)) {
     if(type == "Historical") pb$tick()$print() # update the progress bar (tick())
 
+
     # get game details
     game <- data[i, ]
 
     # Get current elo
-    home_elo <- team_elo$ELO[(team_elo$Team == game$Home.Team)]
-    away_elo <- team_elo$ELO[(team_elo$Team == game$Away.Team)]
+    home_elo <- team_elo$ELO[(team_elo$Team == data$Home.Team[i])]
+    away_elo <- team_elo$ELO[(team_elo$Team == data$Away.Team[i])]
 
-    if (game$Round.Number == 1) {
+    if (data$Round.Number[i] == 1) {
       home_elo <- calculate_season_carryover(home_elo, initial_team = init_elo, weight = carryover_weight)
       away_elo <- calculate_season_carryover(away_elo, initial_team = init_elo, weight = carryover_weight)
     }
@@ -110,40 +120,32 @@ process_matches <- function(data, team_elo, type = "Historical",
 
     if (type == "Simulation") {
       # sample from rnorm of mean marg and historical SD
-      game$margin <- round(rnorm(1, exp_margin, sd = stdev))
+      data$margin[i] <- round(rnorm(1, exp_margin, sd = stdev))
     }
 
     # Find MOV multiplier
-    MOV <- calculate_MOV(elo_diff, game$Margin)
+    MOV <- calculate_MOV(elo_diff, data$Margin[i])
 
     # Calculate ELO change
     elo_change <- update_elo(
-      game$Margin, elo_diff, MOV = MOV,
+      data$Margin[i], elo_diff, MOV = MOV,
       k = k, M = M, B = B
     )
 
     new_home_elo <- home_elo + elo_change
     new_away_elo <- away_elo - elo_change
-    team_elo$ELO[(team_elo$Team == game$Home.Team)] <- new_home_elo
-    team_elo$ELO[(team_elo$Team == game$Away.Team)] <- new_away_elo
+    team_elo$ELO[(team_elo$Team == data$Home.Team[i])] <- new_home_elo
+    team_elo$ELO[(team_elo$Team == data$Away.Team[i])] <- new_away_elo
 
     # Add new data to df
-    game <- game %>%
-      mutate(
-        Home.ELO = home_elo,
-        Away.ELO = away_elo,
-        Home.ELO_post = new_home_elo,
-        Away.ELO_post = new_away_elo,
-        exp_margin = exp_margin,
-        exp_outcome = exp_outcome
-      )
-
-
-    # Bind to bigger data frame
-    results <- results %>%
-      bind_rows(game)
+      data$Home.ELO[i] = home_elo
+      data$Away.ELO[i] = away_elo
+      data$Home.ELO_post[i] = new_home_elo
+      data$Away.ELO_post[i] = new_away_elo
+      data$exp_margin[i] = exp_margin
+      data$exp_outcome[i] = exp_outcome
   }
 
-
-  return(results)
+  message("Finished Processing Data")
+  return(data)
 }
